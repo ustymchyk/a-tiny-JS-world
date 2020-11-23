@@ -7,6 +7,41 @@
 
 // ======== OBJECTS DEFINITIONS ========
 // Define your objects here
+const dog = {
+   species: 'dog',
+   legs: 4,
+   name: 'Jack',
+   gender: 'male',
+   saying: 'Wof',
+   friends: ['Tom'],
+};
+const cat = {
+   species: 'cat',
+   legs: 4,
+   name: 'Arnold',
+   gender: 'male',
+   saying: 'Meow',
+   friends: ['Jarry'],
+};
+const woman = {
+   species: 'human',
+   legs: 2,
+   hands: 2,
+   name: 'Leonid',
+   gender: 'male',
+   saying: 'This is sparta!',
+   friends: ['Margaret'],
+};
+const man = {
+   species: 'human',
+   legs: 2,
+   hands: 2,
+   name: 'Margaret',
+   gender: 'female',
+   saying: 'No!',
+   friends: ['Leonid'],
+};
+
 
 
 // ======== OUTPUT ========
@@ -28,4 +63,9 @@
    print('human; <strong>John</strong>; male; 2; 2; <em>Hello world!</em>; Rex, Tom, Jenny', 'div');
    */
 
+[dog, cat, woman, man].forEach(obj => print(convertToString(obj)));
+
+function convertToString(obj) {
+   return Object.values(obj).flat().join('; ');
+}
 

@@ -8,14 +8,19 @@
 // ======== OBJECTS DEFINITIONS ========
 // Define your objects here
 class Creature {
-   constructor(name, gender, age) {
+   constructor(name, gender, age, species) {
       if (new.target === Creature) {
          throw new TypeError("Cannot construct Abstract instances directly");
       }
 
+      this.species = species;
       this.name = name;
       this.gender = gender;
       this.age = age;
+   }
+
+   toString() {
+      return `${this.species}, ${this.name}, ${this.gender}, ${this.age}`;
    }
 
    bornCreature(partner = {}, femaleName, maleName) {
@@ -35,12 +40,12 @@ class Pet extends Creature {
    #angrySound;
    #energy;
 
-   constructor(name, gender, age, happySound, angrySound) {
+   constructor(name, gender, age, species, happySound, angrySound) {
       if (new.target === Creature) {
          throw new TypeError("Cannot construct Abstract instances directly");
       }
 
-      super(name, gender, age);
+      super(name, gender, age, species);
 
       this.#happySound = happySound;
       this.#angrySound = angrySound;
@@ -66,8 +71,8 @@ class Pet extends Creature {
       this._talk(this.#happySound);
    }
 
-   introduce() {
-      return `${this.#happySound} ${this.name} ${this.#happySound} ${this.#happySound} ${this.gender} ${this.#happySound} ${this.age}`;
+   toString() {
+      return `${this.#happySound} ${super.toString()} ${this.#happySound}`;
    }
 
    _talk(sound) {
@@ -82,15 +87,13 @@ class Pet extends Creature {
 // I use _ instead of # in methods for prototype inheritance.
 class Cat extends Pet {
    constructor(name, gender, age) {
-      super(name, gender, age, 'meow', 'shhhh');
-      this.species = 'cat';
+      super(name, gender, age, 'cat', 'meow', 'shhhh');
    }
 }
 
 class Dog extends Pet {
    constructor(name, gender, age) {
-      super(name, gender, age, 'wof', 'grrrr');
-      this.species = 'dog';
+      super(name, gender, age, 'dog', 'wof', 'grrrr');
    }
 }
 
@@ -100,14 +103,14 @@ class Human extends Creature {
    #contacts = [];
 
    constructor(name, gender, age) {
-      super(name, gender, age);
-      this.species = 'human';
+      super(name, gender, age, 'human');
       this.spouse = null;
+      this.children = [];
    }
 
    talkWith(otherHuman) {
       if (otherHuman instanceof Human) {
-         if (!this.#contacts.includes(otherHuman.name)) {
+         if (!this.#contacts.includes(otherHuman)) {
             this._createContact(otherHuman);
             otherHuman.talkWith(this);
          }
@@ -118,64 +121,101 @@ class Human extends Creature {
 
    makeProposal(otherHuman) {
       if (!this.spouse && otherHuman.answerProposal(this)) {
-         this.spouse = otherHuman.name;
+         this.spouse = otherHuman;
       }
    }
 
    answerProposal(otherHuman) {
-      if (!this.spouse && this.#sympathy.includes(otherHuman.name)) {
-         this.spouse = otherHuman.name;
+      if (!this.spouse && this.#sympathy.includes(otherHuman)) {
+         this.spouse = otherHuman;
 
          return true;
       }
    }
 
    getFriendsNames() {
-      return this.#friends.join('; ');
+      return this.#friends.map(human => human.name).join('; ');
    }
 
-   introduce() {
+   toString() {
       const intro = `Hello! My name is ${this.name}, I'm ${this.age}. `;
-      let friends = '';
-      let spouse = '';
+      let friends = this.#friends.length ? `There is my friends: ${this.getFriendsNames()}. ` : '';
+      let spouse = this.spouse ? `And i have a spouse ${this.spouse.name}; ` : '';
+      let children = this.children.length ? `My ` + this.children.length > 1 ? `children: ${this._getChildren()}` : `child: ${this._getChildren()}` : '';
 
-      if (this.#friends.length) {
-         friends = `There is my friends: ${this.getFriendsNames()}. `;
+      return intro + friends + spouse + children;
+   }
+
+   bornCreature(partner, femaleName, maleName) {
+      if (this.spouse === partner) {
+         const child = super.bornCreature(partner, femaleName, maleName);
+
+         this.children.push(child);
+         partner.addChild(child);
+
+         return child;
       }
+   }
 
-      if (this.spouse) {
-         spouse = `And i have a spouse ${this.spouse}; `;
-      }
+   addChild(child) {
+      this.children.push(child);
+   }
 
-      return intro + friends + spouse;
-
+   _getChildren() {
+      return this.children.map(child => child.name).join('; ');
    }
 
    _createContact(otherHuman) {
-      const name = otherHuman.name;
       const random = Math.random();
 
-      this.#contacts.push(name);
+      this.#contacts.push(otherHuman);
 
       if (random > .3) {
-         this.#friends.push(name);
+         this.#friends.push(otherHuman);
       }
 
       if (otherHuman.gender !== this.gender && random > .5) {
-         this.#sympathy.push(otherHuman.name);
+         this.#sympathy.push(otherHuman);
       }
    }
 }
 
-const getRandomAge = () => Math.floor(Math.random() * 15 + 20);
+class Names {
+   #maleNames = [
+      'Liam', 'Noah', 'Oliver', 'William', 'Elijah', 'James', 'Benjamin',
+      'Mason', 'Ethan', 'Alexander', 'Henry', 'Jacob', 'Michael', 'Daniel',
+      'Logan', 'Jackson', 'Sebastian', 'Jack', 'Aiden', 'Owen', 'Samuel', 'Matthew'];
 
-const men = ['Liam', 'Noah', 'Oliver', 'William', 'Elijah', 'James', 'Benjamin'].map(name => new Human(name, 'm', getRandomAge()));
-const women = ['Olivia', 'Emma', 'Ava', 'Sophia', 'Isabella', 'Charlotte', 'Amelia'].map(name => new Human(name, 'f', getRandomAge()));
+   #femaleNames = [
+      'Olivia', 'Emma', 'Ava', 'Sophia', 'Isabella', 'Charlotte', 'Amelia', 'Mia', 'Harper',
+      'Evelyn', 'Abigail', 'Emily', 'Ella', 'Elizabeth', 'Camila', 'Luna', 'Sofia', 'Avery',
+      'Mila', 'Aria', 'Scarlett', 'Penelope', 'Layla', 'Chloe', 'Victoria', 'Madison', 'Eleanor',
+      'Grace', 'Nora', 'Riley'];
+
+   getMaleName() {
+      return this._getRandomName(this.#maleNames);
+   }
+
+   getFemaleName() {
+      return this._getRandomName(this.#femaleNames);
+   }
+
+   _getRandomName(namesArr) {
+      return namesArr[Math.floor(Math.random() * namesArr.length)];
+   }
+}
+
+const getRandomAge = () => Math.floor(Math.random() * 15 + 20);
+const names = new Names();
+
+const men = [0, 1, 2, 3, 4].map(() => new Human(names.getMaleName(), 'm', getRandomAge()));
+const women = [0, 1, 2, 3, 4].map(() => new Human(names.getFemaleName(), 'f', getRandomAge()));
 
 men.forEach(man => {
    women.forEach(woman => {
       man.talkWith(woman);
       man.makeProposal(woman);
+      man.bornCreature(woman, names.getFemaleName(), names.getMaleName());
    });
 });
 
@@ -209,5 +249,4 @@ const puppy = ruby.bornCreature(asher, 'Sushi', 'Sid');
    print('human; <strong>John</strong>; male; 2; 2; <em>Hello world!</em>; Rex, Tom, Jenny', 'div');
    */
 
-[...men, ...women, luna, leo, kitty, asher, ruby, puppy].forEach(creature => print(creature.introduce()));
-
+[...men, ...women, luna, leo, kitty, asher, ruby, puppy].forEach(creature => print(creature.toString()));

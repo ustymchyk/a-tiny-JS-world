@@ -63,15 +63,10 @@ const man = {
    print('human; <strong>John</strong>; male; 2; 2; <em>Hello world!</em>; Rex, Tom, Jenny', 'div');
    */
 
-const convertHumanToString = (obj) => {
-   return ['species', 'name', 'gender', 'saying', 'legs', 'hands', 'friends']
-      .map(property => obj[property]).join('; ');
-};
+const humanProps = ['species', 'name', 'gender', 'saying', 'legs', 'hands', 'friends'];
+const petProps = ['species', 'name', 'gender', 'saying', 'legs', 'friends'];
 
-const convertPatToString = (obj) => {
-   return ['species', 'name', 'gender', 'saying', 'legs', 'friends']
-      .map(property => obj[property]).join('; ');
-};
+const convertObjToString = (props, obj) => props.map(prop => obj[prop]).join('; ');
 
-[woman, man].forEach(obj => print(convertHumanToString(obj)));
-[dog, cat].forEach(obj => print(convertPatToString(obj)));
+[woman, man].forEach(obj => print(convertObjToString(humanProps, obj)));
+[dog, cat].forEach(obj => print(convertObjToString(petProps, obj)));
